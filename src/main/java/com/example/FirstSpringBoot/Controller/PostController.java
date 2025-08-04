@@ -64,7 +64,15 @@ public class PostController {
     }
 
 
-
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable String id) {
+        boolean deleted = postService.deletePostById(id);
+        if (deleted) {
+            return ResponseEntity.ok("Post deleted successfully ✅");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found ❌");
+        }
+    }
     @GetMapping("/posts")
     public ResponseEntity<?> getposts(@RequestParam(defaultValue = "1") int page, @RequestParam(required = false) String category) {
         try {

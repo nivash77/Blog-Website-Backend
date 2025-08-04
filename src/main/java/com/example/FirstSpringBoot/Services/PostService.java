@@ -133,7 +133,13 @@ public class PostService {
         List<PostRepository.CategoryResult> result = postRepository.findDistinctCategories();
         return result.stream().map(PostRepository.CategoryResult::get_id).collect(Collectors.toList());
     }
-
+    public boolean deletePostById(String id) {
+        if (postRepository.existsById(id)) {
+            postRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
     public boolean deleteCommentFromPost(String postId, int index) {
         Post post = mongoTemplate.findById(postId, Post.class);
         if (post == null || post.getCommands() == null || index < 0 || index >= post.getCommands().size()) {
