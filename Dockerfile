@@ -1,14 +1,27 @@
-# Use OpenJDK 21 base image
-FROM eclipse-temurin:21-jdk
+# ------------ Stage 1: Build the JAR using Maven + Java 21 ------------
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy your Spring Boot JAR file into the container
-COPY target/*.jar app.jar
+# Copy pom.xml and download dependencies (use cache)
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Expose port (change if your Spring Boot app uses a different one)
+# Now copy the rest of the project
+COPY . .
+
+# Build the Spring Boot application
+RUN mvn clean package -DskipTests
+
+# ------------ Stage 2: Run the JAR using JDK 21 runtime ------------
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+# Copy built JAR file from previous stage
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 9090
 
-# Command to run the application
+# Run the Spring Boot app
 ENTRYPOINT ["java", "-jar", "app.jar"]
